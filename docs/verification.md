@@ -58,3 +58,30 @@ Last successful private publication before migration:
 [Actions run 40406837231](https://github.com/jmdarling/mcp-connectivity-test/actions/runs/40406837231),
 commit `034022ee1e6bbfd9e923f3d3201d434146ec4204`, native amd64 and arm64 smoke passed.
 Manifest: `sha256:e1c8fd0dbe22ca5822c11da3491e9e9ae39fb1956c1e77be0b15a42a9b962856`.
+
+## Tunnel client installation artifacts
+
+- Upstream v0.0.18 source inspected at
+  `274a5588414819f063d27100a4fb1096aae3830f`, including onboarding, Docker
+  deployment, Dockerfiles, release workflow, and shared CLI configuration.
+- Official full binary ZIP SHA256 verified:
+  `3c82307316acd93c88a384b62af1d81d3f4cb0efa975f9c0bfaef922866a04c4`.
+  Its actual version, quickstart, and run help confirmed the template flags.
+- Anonymous official full-image manifest `v0.0.18` resolved to
+  `sha256:486321616c197fed2d3fbe7d44f22433ce9a1e6c1ee434c0d6652868a5fda5c1`,
+  listing Linux amd64 and arm64. The minimal runtime image's anonymous token
+  request returned 401, so the public full image was selected. No custom image
+  or new package was needed.
+- Four Python safety tests cover the tunnel template, including unsafe network,
+  privileges, unpinned image, key arguments/environment, ports, and writable secret
+  regressions. Existing seven MCP source tests and both XML validators pass locally.
+- Native CI pulls and exercises the official image using a dummy file credential
+  in a network-isolated fixture; it cannot test live authenticated polling.
+- No real key, tunnel, host credential file, Unraid deployment, network settings,
+  or host MCP configuration was created or changed.
+- Native desktop host MCP settings support LAN Streamable HTTP independently of
+  the repo-scoped-plugin limitation in this cloud Dot route; `integration.md`
+  now distinguishes these paths.
+
+The final repository Actions run records observed container smoke results. Live
+readiness and a real ChatGPT tool call require the user's later authorized setup.

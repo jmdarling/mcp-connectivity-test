@@ -99,6 +99,22 @@ repository change. The workflow does not create credentials or alter visibility.
 See [Unraid setup](docs/unraid.md) for anonymous template and image installation
 and [integration limits](docs/integration.md) before expecting Kocho to call it.
 
+## OpenAI tunnel client on Unraid
+
+Use the separate [OpenAI tunnel-client template](templates/openai-tunnel-client.xml)
+and [Unraid setup guide](docs/tunnel-client-unraid.md) for OpenAI's outbound-only
+Secure MCP Tunnel. It uses the official public v0.0.18 image pinned by digest,
+shares the MCP container's loopback network, and reads an existing runtime key
+from one read-only mounted file. It adds no published ports or public exposure.
+No custom tunnel image is needed.
+
+Fill in your existing tunnel ID and prepare the file locally before starting it.
+The template does not create a tunnel/key, grant access, or configure ChatGPT.
+CI exercises the official image on both architectures without contacting OpenAI
+or using a real credential. A ready live client and actual ChatGPT `hello_status`
+call remain the end-to-end check. Native desktop/Codex LAN connections are a
+separate option described in [integration routes](docs/integration.md).
+
 ## Pattern reference
 
 This follows [shin-wallslice](https://github.com/jmdarling/shin-wallslice)'s Node

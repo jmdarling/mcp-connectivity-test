@@ -1,0 +1,8 @@
+{
+  "repository": "openai/tunnel-client",
+  "version": "v0.0.18",
+  "digest": "sha256:486321616c197fed2d3fbe7d44f22433ce9a1e6c1ee434c0d6652868a5fda5c1",
+  "sourceRevision": "274a5588414819f063d27100a4fb1096aae3830f",
+  "binary": "/usr/bin/tunnel-client",
+  "releaseBinarySHA256": "3c82307316acd93c88a384b62af1d81d3f4cb0efa975f9c0bfaef922866a04c4"
+}

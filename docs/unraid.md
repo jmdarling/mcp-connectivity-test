@@ -59,3 +59,8 @@ intentionally accessible only on Unraid itself.
 To update later, pull a verified public image and recreate the container using
 the same restrictions. Pin a `sha-...` image tag or manifest digest for repeatable
 versions. There is no data to migrate. Unraid deployment and pulling remain manual.
+
+For an outbound OpenAI connection, use the separate
+[tunnel-client template and guide](tunnel-client-unraid.md). It joins this
+container's network namespace and uses loopback; no extra server port or LAN
+exposure is required.

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Container version="2">
+  <Name>openai-tunnel-client</Name>
+  <Repository>ghcr.io/openai/tunnel-client:v0.0.18@sha256:486321616c197fed2d3fbe7d44f22433ce9a1e6c1ee434c0d6652868a5fda5c1</Repository>
+  <Registry>https://github.com/openai/tunnel-client/pkgs/container/tunnel-client</Registry>
+  <Network>container:mcp-connectivity-test</Network>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/jmdarling/mcp-connectivity-test/issues</Support>
+  <Project>https://github.com/openai/tunnel-client</Project>
+  <Overview>Official OpenAI Secure MCP Tunnel client, pinned v0.0.18. Outbound HTTPS to OpenAI; no published ports. Shares the running mcp-connectivity-test container's network so http://127.0.0.1:3000/mcp works without exposing the server. Start the MCP container first. Fill in your existing tunnel ID, and prepare the single runtime API-key file before applying. Runs as 65532:65532 with read-only storage and dropped capabilities. Admin UI stays on loopback inside the shared namespace. No Cloudflare mode is enabled. See docs/tunnel-client-unraid.md before installation.</Overview>
+  <Category>Network:Management</Category>
+  <TemplateURL>https://raw.githubusercontent.com/jmdarling/mcp-connectivity-test/main/templates/openai-tunnel-client.xml</TemplateURL>
+  <ExtraParams>--user=65532:65532 --read-only --cap-drop=ALL --security-opt=no-new-privileges:true --memory=256m --pids-limit=64</ExtraParams>
+  <PostArgs>--control-plane.api-key=file:/run/secrets/openai-runtime-key --health.listen-addr=127.0.0.1:8080 --allow-remote-ui=false --open-web-ui=false --log.format=json --log.http-raw-unsafe=false</PostArgs>
+  <Config Name="Tunnel ID" Target="CONTROL_PLANE_TUNNEL_ID" Default="" Description="The complete existing tunnel ID from OpenAI Platform Tunnels. Not an API key. Associate it with the intended ChatGPT workspace separately." Type="Variable" Display="always" Required="true" Mask="false"></Config>
+  <Config Name="Private MCP URL" Target="MCP_SERVER_URL" Default="http://127.0.0.1:3000/mcp" Description="Default uses shared network namespace with mcp-connectivity-test. Keep /mcp. If the MCP port was changed inside its container, update this URL. Host published port 8081 is not used here." Type="Variable" Display="always" Required="true" Mask="false">http://127.0.0.1:3000/mcp</Config>
+  <Config Name="Runtime API-key file" Target="/run/secrets/openai-runtime-key" Default="/mnt/user/appdata/openai-tunnel-client/runtime-api-key" Mode="ro" Description="Existing single regular file containing your runtime key. Prepare locally with owner 65532:65532 and mode 0400. No key value belongs in this template. Read the setup guide; a missing source can become a directory and fail startup." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/openai-tunnel-client/runtime-api-key</Config>
+</Container>
