@@ -43,13 +43,16 @@ no credential patterns, environment files, keys, or sensitive user data were fou
 GitHub confirmed the repository is public. The public source does not authorize a
 publicly reachable service; loopback publishing and all runtime restrictions remain.
 
-The existing package's independent visibility change needs its owner's signed-in
-GitHub UI. The available CLI credential receives HTTP 403 because it lacks package
-scope, and the available browser is signed out. No package visibility write was
-attempted, and no credentials or broader permissions were created. The workflow
-now requires a public package and checks anonymous manifests and pulls after
-publishing. Until the owner completes the one-time visibility step in `unraid.md`,
-the publish gate intentionally fails rather than claiming anonymous installation.
+The package's independent visibility change was completed by its owner in GitHub.
+The automated task did not create credentials or broaden permissions. The workflow
+requires a public package and checks anonymous manifests and pulls after publishing.
+
+Rerun attempt 2 of `40411355520` passed package visibility and anonymous manifest
+checks and completed an anonymous amd64 pull. The arm64 layers downloaded, but the
+classic Docker image store refused to overwrite the same index digest already
+registered for amd64. The verification loop now checks each image's architecture
+and removes only that just-pulled reference before pulling the next architecture.
+This fixes the CI image-store conflict without changing deployment restrictions.
 
 Last successful private publication before migration:
 [Actions run 40406837231](https://github.com/jmdarling/mcp-connectivity-test/actions/runs/40406837231),

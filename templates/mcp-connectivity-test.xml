@@ -8,7 +8,7 @@
   <Privileged>false</Privileged>
   <Support>https://github.com/jmdarling/mcp-connectivity-test/issues</Support>
   <Project>https://github.com/jmdarling/mcp-connectivity-test</Project>
-  <Overview>LAN/Tailscale connectivity test: one harmless hello_status MCP tool. No email, secrets, filesystem access, or host actions. Stateless Streamable HTTP at /mcp, health at /health. Runs as UID/GID 1000 with no storage mounts. Default publishing binds only 127.0.0.1 on the Unraid host. Before using a LAN/Tailscale IP, read docs/unraid.md and restrict access using existing private network controls. Public GHCR distribution is intended for anonymous pulls; if denied during the initial migration, the package owner must set Package settings visibility to Public as described in the guide.</Overview>
+  <Overview>LAN/Tailscale connectivity test: one harmless hello_status MCP tool. No email, secrets, filesystem access, or host actions. Stateless Streamable HTTP at /mcp, health at /health. Runs as UID/GID 1000 with no storage mounts. Default publishing binds only 127.0.0.1 on the Unraid host. Before using a LAN/Tailscale IP, read docs/unraid.md and restrict access using existing private network controls. Public GHCR image supports anonymous pulls without a registry login.</Overview>
   <TemplateURL>https://raw.githubusercontent.com/jmdarling/mcp-connectivity-test/main/templates/mcp-connectivity-test.xml</TemplateURL>
   <Category>Tools:Utilities</Category>
   <WebUI>http://[IP]:8081/health</WebUI>

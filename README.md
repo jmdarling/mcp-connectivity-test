@@ -92,14 +92,9 @@ repository and a public GHCR package, then verifies anonymous manifest access an
 pulls both architectures with an empty Docker credential configuration. Source and
 container checks still run when package visibility needs an owner action.
 
-The repository is public. The existing image package was initially private;
-GitHub does not change its visibility when repository visibility changes. If the
-publish job reports that the package is private, the owner must open the
-[package](https://github.com/jmdarling/mcp-connectivity-test/pkgs/container/mcp-connectivity-test),
-choose **Package settings → Change visibility → Public**, then rerun the workflow.
-This uses the existing signed-in GitHub account; no new token is needed. After
-that one-time change, public GHCR pulls require no login. The workflow does not
-create credentials or alter package visibility automatically.
+The repository and image package are public. Public GHCR pulls require no login.
+The owner completed the package's one-time visibility change separately from the
+repository change. The workflow does not create credentials or alter visibility.
 
 See [Unraid setup](docs/unraid.md) for anonymous template and image installation
 and [integration limits](docs/integration.md) before expecting Kocho to call it.

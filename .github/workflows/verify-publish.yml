@@ -95,5 +95,9 @@ jobs:
           trap 'rm -rf "$anonymous_config"' EXIT
           for arch in amd64 arm64; do
             docker --config "$anonymous_config" pull --platform "linux/$arch" "ghcr.io/jmdarling/mcp-connectivity-test@$DIGEST"
+            test "$(docker image inspect --format '{{.Os}}/{{.Architecture}}' "ghcr.io/jmdarling/mcp-connectivity-test@$DIGEST")" = "linux/$arch"
+            # The classic Docker image store cannot keep two architectures under one index digest.
+            # Remove only this just-pulled reference before checking the next architecture.
+            docker image rm "ghcr.io/jmdarling/mcp-connectivity-test@$DIGEST"
           done
           printf 'Public image verified with anonymous manifest access and both architecture pulls: `%s@%s`\n' ghcr.io/jmdarling/mcp-connectivity-test "$DIGEST" >> "$GITHUB_STEP_SUMMARY"
