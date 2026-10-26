@@ -73,10 +73,10 @@ smoke script starts an isolated loopback container, checks Docker health,
 non-root execution, MCP behavior, and graceful shutdown, then removes it.
 `pnpm docker:smoke IMAGE linux/arm64` can test an ARM64 build when QEMU is installed.
 
-## Private image publishing
+## Public image publishing
 
 The GitHub workflow verifies source and builds/tests Linux amd64 and arm64
-containers on native runners before publishing to private GHCR:
+containers on native runners before publishing to public GHCR:
 
 ```text
 ghcr.io/jmdarling/mcp-connectivity-test:latest
@@ -87,11 +87,21 @@ Use the SHA tag or manifest digest to pin a deployment. `latest` advances on
 verified pushes to `main` or manual workflow dispatch on `main`. Pull requests
 only verify. There is no automatic Unraid deployment. Actions are pinned to
 commit SHAs. Publishing uses the workflow's short-lived `GITHUB_TOKEN`; no new
-personal token or repository secret is needed. The workflow refuses a non-private
-repository or existing non-private package and verifies package privacy afterward.
-New GHCR packages are private by default; no visibility-changing API is called.
+personal token or repository secret is needed. The workflow requires this public
+repository and a public GHCR package, then verifies anonymous manifest access and
+pulls both architectures with an empty Docker credential configuration. Source and
+container checks still run when package visibility needs an owner action.
 
-See [Unraid setup](docs/unraid.md) for the private image credential requirement
+The repository is public. The existing image package was initially private;
+GitHub does not change its visibility when repository visibility changes. If the
+publish job reports that the package is private, the owner must open the
+[package](https://github.com/jmdarling/mcp-connectivity-test/pkgs/container/mcp-connectivity-test),
+choose **Package settings → Change visibility → Public**, then rerun the workflow.
+This uses the existing signed-in GitHub account; no new token is needed. After
+that one-time change, public GHCR pulls require no login. The workflow does not
+create credentials or alter package visibility automatically.
+
+See [Unraid setup](docs/unraid.md) for anonymous template and image installation
 and [integration limits](docs/integration.md) before expecting Kocho to call it.
 
 ## Pattern reference
@@ -100,7 +110,7 @@ This follows [shin-wallslice](https://github.com/jmdarling/shin-wallslice)'s Nod
 24, pinned pnpm, multi-stage Docker build, non-root runtime, health check,
 multi-platform GHCR workflow, and Unraid Container v2 XML conventions. This server
 needs no UI, AI configuration, appdata, entrypoint privilege transition, or storage.
-The existing project was inspected without modification. Its public package and
-anonymous-pull release behavior were intentionally not copied into this private repo.
+The existing project was inspected without modification. Public source and image
+distribution do not expose a running MCP service: deployment stays private.
 
 See [verification evidence](docs/verification.md) for the observed results.

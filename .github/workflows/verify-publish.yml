@@ -1,4 +1,4 @@
-name: Verify and publish private image
+name: Verify and publish public image
 on:
   pull_request:
   push:
@@ -56,16 +56,14 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Require private repository and private package
+      - name: Require public repository and package
         env:
           REPO: ${{ github.repository }}
         run: |
-          test "$(gh api "repos/$REPO" --jq .private)" = true
-          status=$(gh api --include users/jmdarling/packages/container/mcp-connectivity-test 2>/dev/null || true)
-          if printf '%s' "$status" | head -1 | grep -q '200'; then
-            test "$(gh api users/jmdarling/packages/container/mcp-connectivity-test --jq .visibility)" = private
-          elif ! printf '%s' "$status" | head -1 | grep -q '404'; then
-            printf '%s\n' 'Cannot verify package visibility; refusing to publish.'
+          test "$(gh api "repos/$REPO" --jq .private)" = false
+          visibility=$(gh api users/jmdarling/packages/container/mcp-connectivity-test --jq .visibility)
+          if [ "$visibility" != public ]; then
+            printf '%s\n' 'Package visibility is still private. The owner must open this package on GitHub, select Package settings, and Change visibility to Public, then rerun this workflow. No token or wider access is needed.'
             exit 1
           fi
       - uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3
@@ -87,10 +85,15 @@ jobs:
           build-args: REVISION=${{ github.sha }}
           provenance: mode=max
           sbom: true
-      - name: Verify package stayed private and inspect published manifest
+      - name: Verify public package and anonymous pulls
         env:
           DIGEST: ${{ steps.image.outputs.digest }}
         run: |
-          test "$(gh api users/jmdarling/packages/container/mcp-connectivity-test --jq .visibility)" = private
-          docker buildx imagetools inspect "ghcr.io/jmdarling/mcp-connectivity-test@$DIGEST"
-          printf 'Private multi-platform image: `%s@%s`\n' ghcr.io/jmdarling/mcp-connectivity-test "$DIGEST" >> "$GITHUB_STEP_SUMMARY"
+          test "$(gh api users/jmdarling/packages/container/mcp-connectivity-test --jq .visibility)" = public
+          node scripts/anonymous-image.mjs "$DIGEST"
+          anonymous_config=$(mktemp -d)
+          trap 'rm -rf "$anonymous_config"' EXIT
+          for arch in amd64 arm64; do
+            docker --config "$anonymous_config" pull --platform "linux/$arch" "ghcr.io/jmdarling/mcp-connectivity-test@$DIGEST"
+          done
+          printf 'Public image verified with anonymous manifest access and both architecture pulls: `%s@%s`\n' ghcr.io/jmdarling/mcp-connectivity-test "$DIGEST" >> "$GITHUB_STEP_SUMMARY"

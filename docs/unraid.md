@@ -1,31 +1,44 @@
 # Unraid setup (instructions only)
 
 No Unraid installation, configuration change, or deployment is performed by this
-repository's workflow. The repository and GHCR package stay private.
+repository's workflow. Source and template are public. The image is intended for
+public anonymous pulls; the one-time package visibility change below must be
+complete before an unauthenticated pull succeeds. The running service stays on
+your private LAN/Tailscale network.
 
 ## Obtain the template and image
 
-1. Download `templates/mcp-connectivity-test.xml` from this private repository
-   using your existing GitHub access. A private raw GitHub URL is not a public
-   Community Apps template source. Do not embed a token in a template URL.
-2. When ready to deploy, copy the XML to Unraid's
-   `/boot/config/plugins/dockerMan/templates-user/my-mcp-connectivity-test.xml`.
-   Then use Docker → Add Container and choose the template.
+1. When ready to install, run these commands in Unraid's web terminal. The
+   template download needs no GitHub login or token:
+
+   ```sh
+   mkdir -p /boot/config/plugins/dockerMan/templates-user
+   curl --fail --location https://raw.githubusercontent.com/jmdarling/mcp-connectivity-test/main/templates/mcp-connectivity-test.xml --output /boot/config/plugins/dockerMan/templates-user/my-mcp-connectivity-test.xml
+   ```
+
+2. Use Docker → Add Container and choose `mcp-connectivity-test`.
 3. Keep the `bridge` network and `Privileged: false`. There are no appdata or
    filesystem mappings and no Docker socket mount. Runtime identity is UID/GID 1000.
-4. Pulling `ghcr.io/jmdarling/mcp-connectivity-test:latest` requires an existing
-   registry login authorized to read this **private** package. GitHub's supported
-   CLI authentication for private GHCR pulls uses a personal access token (classic)
-   with `read:packages`, plus access to the package. If you already have an
-   appropriate credential, supply it through Docker's normal `--password-stdin`
-   login mechanism on the Unraid host. Registry credentials are stored on that host;
-   follow your own credential handling policy and do not add them to the XML or repo.
-   No token is created, requested, or saved by this project. Without an existing
-   credential, pull is blocked until you choose how to authorize it. An alternative
-   is building the image locally from an authenticated checkout and loading it onto
-   Unraid yourself. The Actions `GITHUB_TOKEN` cannot be reused as an Unraid login.
+4. After package visibility is public, pull
+   `ghcr.io/jmdarling/mcp-connectivity-test:latest` anonymously and Apply. No Docker
+   registry login, GitHub account, or personal access token is required on Unraid.
+   This user template is directly installable; it is not a Community Apps listing.
 
-GitHub documentation: [container registry authentication](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-to-the-container-registry).
+### One-time package visibility migration
+
+This image was first published privately. Making the source repository public
+does not change existing GHCR package visibility. While signed in as the package
+owner, open the [package page](https://github.com/jmdarling/mcp-connectivity-test/pkgs/container/mcp-connectivity-test),
+choose **Package settings**, then in **Danger Zone** choose **Change visibility → Public**
+and complete GitHub's confirmation. Rerun the latest Actions workflow afterward.
+The existing CLI credential cannot manage this package, and the automated task
+does not create or expand credentials to work around that restriction.
+
+If an anonymous pull says denied before this step is complete, change the package
+visibility instead of creating a token on Unraid. Public distribution changes only
+who can download source/image files; it does not open a network endpoint.
+
+GitHub documentation: [package visibility and anonymous container access](https://docs.github.com/en/packages/learn-github-packages/configuring-a-packages-access-control-and-visibility).
 
 ## Choose the private bind address
 
@@ -56,6 +69,6 @@ healthcheck should become healthy shortly after startup. The template's WebUI li
 works remotely only after choosing a reachable private bind address; loopback is
 intentionally accessible only on Unraid itself.
 
-To update later, pull a verified private image and recreate the container using
+To update later, pull a verified public image and recreate the container using
 the same restrictions. Pin a `sha-...` image tag or manifest digest for repeatable
 versions. There is no data to migrate. Unraid deployment and pulling remain manual.
