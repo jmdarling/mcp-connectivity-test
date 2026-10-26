@@ -37,7 +37,9 @@ try {
   for (let attempt = 0; attempt < 40; attempt++) {
     const state = JSON.parse(docker("inspect", name))[0].State;
     if (!state.Running)
-      throw new Error("Container exited before becoming healthy");
+      throw new Error(
+        `Container exited before becoming healthy: ${JSON.stringify(state)}`,
+      );
     if (state.Health.Status === "healthy") {
       healthy = true;
       break;

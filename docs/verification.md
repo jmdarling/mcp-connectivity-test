@@ -15,12 +15,18 @@ Initial implementation: 2026-10-26.
 - Seven Node test cases pass, including a real SDK MCP initialize/list/call flow.
 - Strict TypeScript compilation passes. Formatting and template checks are part
   of `pnpm check` / `scripts/validate-template.py` and CI.
+- Local formatting, XML validation, Compose configuration validation, and
+  `pnpm audit --prod` pass (no known production dependency vulnerabilities).
 - Local Docker build/run unavailable: the host denied access to
   `/var/run/docker.sock`, including outside the execution sandbox; passwordless
   sudo is unavailable. No daemon settings or group memberships were changed.
 - CI is configured to build and run Docker/MCP smoke tests on amd64 and arm64
   before publishing the private image. See the repository Actions run for the
   observed result, rather than assuming configuration equals execution.
+- Initial CI run `40406249727`: source checks and amd64 Docker/MCP smoke passed;
+  arm64 built but exited during health checking under QEMU with the restricted
+  128 MiB runtime. Publishing was skipped. Verification now uses native runners
+  for each architecture, matching the reference project, and reports exit state.
 - Unraid installation/deployment: not run (outside the requested scope).
 - Kocho supported-integration tool discovery/call: not run; current host guidance
   blocks repo-scoped MCP plugins. See `integration.md`.

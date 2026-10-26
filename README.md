@@ -76,7 +76,7 @@ non-root execution, MCP behavior, and graceful shutdown, then removes it.
 ## Private image publishing
 
 The GitHub workflow verifies source and builds/tests Linux amd64 and arm64
-containers (ARM64 under QEMU) before publishing to private GHCR:
+containers on native runners before publishing to private GHCR:
 
 ```text
 ghcr.io/jmdarling/mcp-connectivity-test:latest
