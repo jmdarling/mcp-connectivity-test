@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Container version="2">
+  <Name>mcp-connectivity-test</Name>
+  <Repository>ghcr.io/jmdarling/mcp-connectivity-test:latest</Repository>
+  <Registry>https://github.com/jmdarling/mcp-connectivity-test/pkgs/container/mcp-connectivity-test</Registry>
+  <Network>bridge</Network>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/jmdarling/mcp-connectivity-test/issues</Support>
+  <Project>https://github.com/jmdarling/mcp-connectivity-test</Project>
+  <Overview>Private connectivity test: one harmless hello_status MCP tool. No email, secrets, filesystem access, or host actions. Stateless Streamable HTTP at /mcp, health at /health. Runs as UID/GID 1000 with no storage mounts. Default publishing binds only 127.0.0.1 on the Unraid host. Before using a LAN/Tailscale IP, read docs/unraid.md and restrict access using existing private network controls. GHCR image is private and requires an existing authorized registry login or a local build.</Overview>
+  <Category>Tools:Utilities</Category>
+  <WebUI>http://[IP]:8081/health</WebUI>
+  <!-- Publish here, not with a Type=Port entry: Unraid port entries bind all interfaces. -->
+  <ExtraParams>--publish=127.0.0.1:8081:3000/tcp --read-only --cap-drop=ALL --security-opt=no-new-privileges:true --memory=128m --pids-limit=64</ExtraParams>
+  <Config Name="Allowed hostnames and IPs" Target="MCP_ALLOWED_HOSTS" Default="localhost,127.0.0.1,[::1]" Description="Exact comma-separated request hostnames/IPs, without schemes, ports, or wildcards. Add the selected Unraid LAN or Tailscale address here when changing the publish IP. Retain localhost and 127.0.0.1 for health checks. This is DNS rebinding protection, not authentication." Type="Variable" Display="always" Required="true" Mask="false">localhost,127.0.0.1,[::1]</Config>
+</Container>

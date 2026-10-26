@@ -1,0 +1,14 @@
+services:
+  mcp-connectivity-test:
+    image: ghcr.io/jmdarling/mcp-connectivity-test:latest
+    build: .
+    ports:
+      - "${MCP_BIND_IP:-127.0.0.1}:${MCP_HOST_PORT:-8081}:3000"
+    environment:
+      MCP_ALLOWED_HOSTS: "${MCP_ALLOWED_HOSTS:-localhost,127.0.0.1,[::1]}"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 128m
+    pids_limit: 64
+    restart: unless-stopped

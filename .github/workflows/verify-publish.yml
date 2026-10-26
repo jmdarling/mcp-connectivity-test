@@ -1,0 +1,89 @@
+name: Verify and publish private image
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions: {}
+concurrency:
+  group: verify-publish-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1, matching shin-wallslice
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+      - run: python3 scripts/validate-template.py
+      - run: docker compose config --quiet
+      - uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - name: Build and exercise both container architectures
+        run: |
+          for arch in amd64 arm64; do
+            docker buildx build --platform "linux/$arch" --load -t "mcp-connectivity-test:verify-$arch" .
+            pnpm docker:smoke "mcp-connectivity-test:verify-$arch" "linux/$arch"
+          done
+  publish:
+    needs: verify
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Require private repository and private package
+        env:
+          REPO: ${{ github.repository }}
+        run: |
+          test "$(gh api "repos/$REPO" --jq .private)" = true
+          status=$(gh api --include users/jmdarling/packages/container/mcp-connectivity-test 2>/dev/null || true)
+          if printf '%s' "$status" | head -1 | grep -q '200'; then
+            test "$(gh api users/jmdarling/packages/container/mcp-connectivity-test --jq .visibility)" = private
+          elif ! printf '%s' "$status" | head -1 | grep -q '404'; then
+            printf '%s\n' 'Cannot verify package visibility; refusing to publish.'
+            exit 1
+          fi
+      - uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        id: image
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/jmdarling/mcp-connectivity-test:latest
+            ghcr.io/jmdarling/mcp-connectivity-test:sha-${{ github.sha }}
+          build-args: REVISION=${{ github.sha }}
+          provenance: mode=max
+          sbom: true
+      - name: Verify package stayed private and inspect published manifest
+        env:
+          DIGEST: ${{ steps.image.outputs.digest }}
+        run: |
+          test "$(gh api users/jmdarling/packages/container/mcp-connectivity-test --jq .visibility)" = private
+          docker buildx imagetools inspect "ghcr.io/jmdarling/mcp-connectivity-test@$DIGEST"
+          printf 'Private multi-platform image: `%s@%s`\n' ghcr.io/jmdarling/mcp-connectivity-test "$DIGEST" >> "$GITHUB_STEP_SUMMARY"
