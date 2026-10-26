@@ -154,7 +154,7 @@ try {
         "node",
         "--input-type=module",
         "-e",
-        "const r=await fetch('http://127.0.0.1:8080/healthz');if(r.status!==200)process.exit(1)",
+        "for(const url of ['http://127.0.0.1:3000/health','http://127.0.0.1:8080/healthz']){const r=await fetch(url);if(r.status!==200)process.exit(1)}",
       ],
       { encoding: "utf8", timeout: 5000 },
     );
@@ -171,7 +171,7 @@ try {
   }
   assert.ok(
     healthy,
-    "official client starts using the template file-key and loopback flags",
+    "MCP server and official client are healthy with the template flags",
   );
   assert.equal(
     docker("exec", tunnel, "wget", "-qO-", "http://127.0.0.1:3000/health"),
